@@ -1,0 +1,11 @@
+{
+  "name": "MyHtmlProject",
+  "version": "1.0.0",
+  "description": "000",
+  "scripts": {
+    "start": "live-server"
+  },
+  "dependencies": {
+    "jsonwebtoken": "^9.0.2"
+  }
+}
