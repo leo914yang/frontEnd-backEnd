@@ -6,8 +6,6 @@
 //
 // Scripts
 // 
-// 每隔一段时间（例如每秒钟）调用 checkAndRefreshDiv 函数
-const interval = setInterval(checkAndRefreshDiv, 3000); // 1000 毫秒表示每秒钟
 
 window.addEventListener('DOMContentLoaded', event => {
     const port = "http://localhost:8081";
@@ -53,7 +51,7 @@ window.addEventListener('DOMContentLoaded', event => {
             'Content-Type': 'application/json'
         };
 
-        fetch(port + '/api', {
+        fetch(port + '/api/user', {
             method: 'POST',
             headers: headers,
             body: JSON.stringify({
@@ -90,7 +88,7 @@ window.addEventListener('DOMContentLoaded', event => {
 
         const nameInput = document.getElementById('nameRead');
         const name = nameInput.value;
-        const apiUrl = `/api?name=${name}`;
+        const apiUrl = `/api/user?name=${name}`;
 
         fetch(port + apiUrl, {
             method: 'GET'
@@ -106,7 +104,6 @@ window.addEventListener('DOMContentLoaded', event => {
                 data.forEach(item => {
                     content += `ID: ${item.id}, Name: ${item.name}, Des: ${item.des}<br>`;
                 });
-
                 responseDivRead.innerHTML = content;
             })
             .catch(error => {
@@ -114,34 +111,38 @@ window.addEventListener('DOMContentLoaded', event => {
             });
     });
 
-    // const dataFormReadNews = document.getElementById('dataFormReadNews');
-    // const responseDivReadNews = document.getElementById('responseReadNews');
-    // dataFormRead.addEventListener('submit', function (e) {
-    //     e.preventDefault();
-    //     const numReadNews = document.getElementById('numReadNews');
-    //     const apiUrl = `/api?name=${numReadNews}`;
-    //     fetch(port + apiUrl, {
-    //         method: 'GET'
-    //     })
-    //         .then(response => {
-    //             if (!response.ok) {
-    //                 throw new Error('發生錯誤');
-    //             }
-    //             return response.json();
-    //         })
-    //         .then(scrapedData => {
-    //             const content = scrapedData.href.map((href, index) => {
-    //                 const text = scrapedData.text[index];
-    //                 return `${index + 1}: <a href="${href}" target="_blank">${text}</a><br>`;
-    //             }).join('');
-    //             newsContent.innerHTML = content;
-    //         })
-    //         .catch(error => {
-    //             console.error('Error:', error);
-    //         });
+    const dataFormReadNews = document.getElementById('dataFormReadNews');
+    const responseDivReadNews = document.getElementById('responseReadNews');
+    dataFormReadNews.addEventListener('submit', function (e) {
+        e.preventDefault();
+        const numReadNews = document.getElementById('numReadNews');
+        const apiUrl = `/api/news?name=${numReadNews.value}`;
+        fetch(port + apiUrl, {
+            method: 'GET'
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('發生錯誤');
+                }
+                return response.json();
+            })
+            .then(data => {
+                let content = '';
+                for (let index = 0; index < data.length; index++) {
+                    const item = data[index];
+                    const url = item.url;
+                    const title = item.title;
+                    const id = item.id;
+                    content += `${id}: <a href="${url}" target="_blank">${title}</a><br>`;
+                }
+                responseDivReadNews.innerHTML = content;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
 
 
-    // });
+    });
 
     const dataFormUpdate = document.getElementById('dataFormUpdate');
     //const responseDivUpdate = document.getElementById('responseUpdate');
@@ -159,7 +160,7 @@ window.addEventListener('DOMContentLoaded', event => {
         const desInput = document.getElementById('desUpdate');
         const des = desInput.value;
 
-        fetch(port + '/api', {
+        fetch(port + '/api/user', {
             method: 'PUT',
             headers: headers,
             body: JSON.stringify({ 'id': id, 'des': des })
@@ -195,7 +196,7 @@ window.addEventListener('DOMContentLoaded', event => {
             return;
         }
 
-        fetch(port + '/api', {
+        fetch(port + '/api/user', {
             method: 'DELETE',
             headers: headers,
             body: JSON.stringify({ 'id': id })
@@ -210,6 +211,40 @@ window.addEventListener('DOMContentLoaded', event => {
                     const floatingWindow = document.getElementById('floating-window');
                     floatingWindow.innerHTML = 'Token has deleted!';
                     alert('Delete Successful');
+                } else {
+                    alert('Delete Successful');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+    });
+
+    const dataFormDeleteNews = document.getElementById("dataFormDeleteNews");
+    dataFormDeleteNews.addEventListener('submit', function (e) {
+        const headers = new Headers();
+        headers.append('Content-Type', 'application/json');
+        const jwtToken = localStorage.getItem('jsonData');
+        if (jwtToken) {
+            headers.append('Authorization', `${jwtToken}`);
+        }
+        e.preventDefault();
+
+        const idDeleteNewsInput = document.getElementById("idDeleteNews");
+        const id = idDeleteNewsInput.value;
+        if (!id) {
+            alert('ID cannot be empty');
+            return;
+        }
+        
+        fetch(port + '/api/news/${id}', {
+            method: 'DELETE',
+            headers: headers
+        })
+            .then(response => response.text())
+            .then(data => {
+                if (data === 'Failed') {
+                    alert('Delete Failed');
                 } else {
                     alert('Delete Successful');
                 }
@@ -264,7 +299,7 @@ window.addEventListener('DOMContentLoaded', event => {
                     return;
                 }
                 else {
-                    const apiUrl = '/api/newsSave';
+                    const apiUrl = '/api/news/save';
                     const innerHTMLHref = newsContent.innerHTML;
                     const innerHTMLText = newsContent.innerText;
                     const hrefArray = [];

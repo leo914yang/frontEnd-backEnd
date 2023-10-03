@@ -35,5 +35,7 @@ function checkAndRefreshDiv() {
         }
     }
 }
+// 每隔一段时间（例如每秒钟）调用 checkAndRefreshDiv 函数
+const interval = setInterval(checkAndRefreshDiv, 3000); // 1000 毫秒表示每秒钟
 
 

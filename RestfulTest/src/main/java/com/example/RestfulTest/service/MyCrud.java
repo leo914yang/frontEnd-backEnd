@@ -2,8 +2,10 @@ package com.example.RestfulTest.service;
 
 import com.example.RestfulTest.config.MyJwtInterceptor;
 import com.example.RestfulTest.dao.model.MyEntity;
+import com.example.RestfulTest.dao.model.NewsEntity;
 import com.example.RestfulTest.dao.vo.KeyEntityRepository;
 import com.example.RestfulTest.dao.vo.MyEntityRepository;
+import com.example.RestfulTest.dao.vo.NewsEntityRepository;
 import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +18,7 @@ import java.util.Map;
 
 @Slf4j
 @RestController
-@RequestMapping("/")
+@RequestMapping("/api")
 public class MyCrud {
     @Autowired
     private MyEntityRepository myEntityRepository;
@@ -30,20 +32,31 @@ public class MyCrud {
     private KeyEntityRepository keyEntityRepository;
     @Autowired
     private WebScraperService webScraperService;
+    @Autowired
+    private NewsEntityRepository newsEntityRepository;
 
-    @PostMapping("/api")
+    @PostMapping("/user")
     public String create(@RequestBody Map<String, String> jsonFile){
         return dataDAO.saveUser(jsonFile);
     }
 
-    @GetMapping("/api")
+    @GetMapping("/user")
     public ResponseEntity<String> read(@RequestParam("name") String name){
         List<MyEntity> allData = myEntityRepository.findByName(name);
         Gson gson = new Gson();
         return ResponseEntity.ok(gson.toJson(allData));
     }
 
-    @PutMapping("/api")
+    @GetMapping("/news")
+    public ResponseEntity<String> readNews(@RequestParam("name") String number){
+        List<NewsEntity> allData = newsEntityRepository.findLimit(Integer.parseInt(number));
+
+        Gson gson = new Gson();
+        log.info("gson allData: " + gson.toJson(allData));
+        return ResponseEntity.ok(gson.toJson(allData));
+    }
+
+    @PutMapping("/user")
     public String update(HttpServletRequest request,
                          @RequestHeader(name = "Authorization", required = false) String authorizationHeader,
                          @RequestBody Map<String, String> jsonFile){
@@ -61,7 +74,7 @@ public class MyCrud {
 
     }
 
-    @DeleteMapping("/api")
+    @DeleteMapping("/user")
     public String delete(HttpServletRequest request,
                          @RequestHeader(name = "Authorization", required = false) String authorizationHeader,
                          @RequestBody Map<String, String> jsonFile){
@@ -78,13 +91,20 @@ public class MyCrud {
         return deletedToken;
     }
 
-    @PostMapping("/api/news")
+    @DeleteMapping("/news")
+    public String deleteNews(@RequestParam int id){
+
+        return null;
+    }
+
+    @PostMapping("/news")
     public String news(@RequestBody Map<String, String> jsonFile){
         Gson gson = new Gson();
         log.info("Test MyCRUD");
         return gson.toJson(webScraperService.scrapeWebsite(jsonFile));
     }
-    @PostMapping("/api/newsSave")
+
+    @PostMapping("/news/save")
     public String newsSave(@RequestBody Map<String, List<String>> jsonFile){
         return webScraperService.savePages(jsonFile);
     }
